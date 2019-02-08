@@ -1,0 +1,26 @@
+{
+    "name": "ether-phone-booth-contracts",
+    "version": "0.0.1",
+    "description": "Ethereum phone booth smart contracts",
+    "license": "MIT",
+    "dependencies": {
+        "eth-sig-util": "^2.1.0",
+        "openzeppelin-solidity": "^2.1.1",
+        "truffle-contract": "^4.0.2"
+    },
+    "devDependencies": {
+        "dotenv": "^6.2.0",
+        "nodemon": "^1.18.9",
+        "openzeppelin-test-helpers": "^0.1.2",
+        "truffle": "^5.0.1",
+        "truffle-flattener": "^1.2.10",
+        "web3-hdwallet-provider": "^0.2.4"
+    },
+    "scripts": {
+        "test": "truffle test --network local test/all.js",
+        "build": "npm run build:truffle:compile && npm rum build:sdk:web-client",
+        "build:truffle:compile": "truffle compile",
+        "build:sdk:web-client": "webpack --config sdk/web-client/webpack.config.js",
+        "dev": "nodemon -e sol,js -i build -x 'npm run test && npm run build 2>&1'"
+    }
+}
