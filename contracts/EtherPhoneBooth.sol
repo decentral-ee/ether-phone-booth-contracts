@@ -80,5 +80,42 @@ contract EtherPhoneBooth is Ownable, ERC712 {
         ++txCounters[customer];
 
         msg.sender.transfer(requestedAmount);
+
+        emit CustomerCharged(customer, requestedAmount, txCounter, creditBalance, approvedAmount);
     }
+
+    /**
+     * NOTE:
+     * - If single charge fail, the transaction should not fail as a whole
+     * - CustomerCharged should be relied on for knowing which charges are successful
+     */
+    function batchCharge(
+        uint256[] memory requestedAmount,
+        address[] memory customer,
+        uint64[] memory txCounter,
+        uint256[] memory creditBalance,
+        uint256[] memory approvedAmount,
+        uint8[] memory v, bytes32[] memory r, bytes32[] memory s) public onlyOwner returns (bool someFailed) {
+        require(requestedAmount.length == customer.length);
+        require(txCounter.length == customer.length);
+        require(creditBalance.length == customer.length);
+        require(approvedAmount.length == customer.length);
+        require(v.length == customer.length);
+        require(r.length == customer.length);
+        require(s.length == customer.length);
+        for (uint i = 0; i < customer.length; ++i) {
+            (bool success,) = address(this).delegatecall(
+                abi.encodeWithSignature(
+                    "charge(uint256,address,uint64,uint256,uint256,uint8,bytes32,bytes32)",
+                    requestedAmount[i],
+                    customer[i],
+                    txCounter[i],
+                    creditBalance[i],
+                    approvedAmount[i],
+                    v[i], r[i], s[i]));
+            someFailed = someFailed || !success;
+        }
+    }
+
+    event CustomerCharged(address customer, uint256 requestedAmount, uint256 txCounter, uint256 creditBalance, uint256 approvedAmount);
 }
