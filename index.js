@@ -1,7 +1,7 @@
 const TruffleContract = require("truffle-contract");
 
 module.exports = {
-    getContracts: (provider) => {
+    load: (provider) => {
         let contracts = {
             EtherPhoneBooth : TruffleContract(require("./build/contracts/EtherPhoneBooth.json"))
         };

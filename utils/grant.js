@@ -1,4 +1,4 @@
-const ERC712 = require("./erc712");
+const EIP712 = require("eip712-helpers");
 
 const GRANT_TYPE = [
     {
@@ -20,7 +20,7 @@ const GRANT_TYPE = [
 ];
 
 module.exports = async function grant(web3, chainId, boothAddress, customerAddress, txCounter, creditBalance, approvedAmount) {
-    let domainData = new ERC712.DomainData(
+    let domainData = new EIP712.DomainData(
         "EtherPhoneBooth.Grant",
         "v1",
         chainId,
@@ -37,7 +37,7 @@ module.exports = async function grant(web3, chainId, boothAddress, customerAddre
 
     const data = {
         types: {
-            EIP712Domain: ERC712.DOMAON_TYPE,
+            EIP712Domain: EIP712.DOMAON_TYPE,
             Grant: GRANT_TYPE
         },
         domain: domainData,
@@ -45,5 +45,5 @@ module.exports = async function grant(web3, chainId, boothAddress, customerAddre
         message: message
     };
 
-    return await ERC712.signTypedData(web3, customerAddress, data);
+    return await EIP712.signTypedData(web3, customerAddress, data);
 };

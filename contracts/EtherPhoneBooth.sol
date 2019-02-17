@@ -1,11 +1,10 @@
 pragma solidity ^0.5.0;
 
-import 'openzeppelin-solidity/contracts/ownership/Ownable.sol';
-import 'openzeppelin-solidity/contracts/math/SafeMath.sol';
-import { ERC712 } from './ERC712.sol';
+import { Ownable } from 'openzeppelin-solidity/contracts/ownership/Ownable.sol';
+import { SafeMath } from 'openzeppelin-solidity/contracts/math/SafeMath.sol';
+import { EIP712 } from 'eip712-helpers/contracts/EIP712.sol';
 
-
-contract EtherPhoneBooth is Ownable, ERC712 {
+contract EtherPhoneBooth is Ownable, EIP712 {
     using SafeMath for uint256;
 
     bytes32 private constant ETHERPHONEBOOTH_DOMAIN_SALT = 0xb225c57bf2111d6955b97ef0f55525b5a400dc909a5506e34b102e193dd53406;
@@ -18,7 +17,7 @@ contract EtherPhoneBooth is Ownable, ERC712 {
     mapping(address => uint32) private txCounters;
 
     constructor(uint256 chainId) public {
-        GRANT_DOMAIN_SEPARATOR = buildDomainSeparator(
+        GRANT_DOMAIN_SEPARATOR = EIP712.buildDomainSeparator(
             GRANT_DOMAIN_NAME_HASH,
             GRANT_VERSION_HASH,
             chainId,
@@ -50,7 +49,7 @@ contract EtherPhoneBooth is Ownable, ERC712 {
             txCounter,
             creditBalance,
             approvedAmount));
-        return validateMessageSignature(GRANT_DOMAIN_SEPARATOR, grantHash, v, r, s, customer);
+        return EIP712.validateMessageSignature(GRANT_DOMAIN_SEPARATOR, grantHash, v, r, s, customer);
     }
 
     function validateChargeRequest(

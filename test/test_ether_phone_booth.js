@@ -82,7 +82,7 @@ contract("EtherPhoneBooth", accounts => {
         const txCounter = await booth.getCurrentTxCounter.call({ from: customer1 });
         const creditBalance = await booth.getCreditBalance.call(customer1);
         let grant = await BoothUtils.grant(web3, chainId, booth.address, customer1, txCounter, creditBalance, web3.utils.toWei("0.1", "ether"));
-        assert.isTrue(BoothUtils.validateSignature(grant));
+        assert.isTrue(BoothUtils.validateTypedDataSignature(grant));
         assert.isTrue(await booth.validateGrantSignature.call(
             customer1,
             grant.data.message.txCounter,

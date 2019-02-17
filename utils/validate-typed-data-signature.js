@@ -1,6 +1,6 @@
 const EthSigUtils = require("eth-sig-util");
 
-module.exports = function validateSignature(signedTypedData) {
+module.exports = function validateTypedDataSignature(signedTypedData) {
     const recoveredAddress = EthSigUtils.recoverTypedSignature({
         data: signedTypedData.data,
         sig: signedTypedData.sig
