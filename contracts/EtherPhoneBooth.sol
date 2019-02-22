@@ -23,6 +23,6 @@ contract EtherPhoneBooth is Ownable {
         emit EtherDepositWithdrawn(owner, amount);
     }
 
-    event EtherDepositReceived(uint64 orderId, uint256 amount);
+    event EtherDepositReceived(uint64 indexed orderId, uint256 amount);
     event EtherDepositWithdrawn(address owner, uint256 amount);
 }
