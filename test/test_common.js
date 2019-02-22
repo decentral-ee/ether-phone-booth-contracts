@@ -24,7 +24,9 @@ function web3tx(fn, msg, expects = {}) {
 
         // check logs
         if (expects.inLogs) {
-            expectEvent.inLogs(receipt.logs, expects.inLogs.name, expects.inLogs.args);
+            expects.inLogs.forEach(inLogs => {
+                expectEvent.inLogs(receipt.logs, inLogs.name, inLogs.args);
+            });
         }
 
         let gasPrice = web3.utils.fromWei(tx.gasPrice, "gwei");
