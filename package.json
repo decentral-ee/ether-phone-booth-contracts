@@ -5,7 +5,7 @@
     "license": "MIT",
     "dependencies": {
         "eth-sig-util": "^2.1.0",
-        "openzeppelin-solidity": "^2.1.1",
+        "openzeppelin-solidity": "2.1.2",
         "eip712-helpers": "^1.0.1",
         "truffle-contract": "^4.0.2"
     },
