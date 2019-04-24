@@ -3,12 +3,13 @@ const { shouldFail } = require("openzeppelin-test-helpers");
 const { web3tx } = require("./test_common");
 
 contract("PaymentProcessor", accounts => {
+    const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
     const admin = accounts[0];
     const customer1 = accounts[1];
     const customer2 = accounts[2];
     const hacker = accounts[9];
     let chainId;
-    let booth;
+    let pp;
 
     before(async () => {
         chainId = await web3.eth.net.getId();
@@ -18,13 +19,13 @@ contract("PaymentProcessor", accounts => {
     });
 
     beforeEach(async () => {
-        console.log("creating new booth for testing");
-        booth = await web3tx(PaymentProcessor.new, "PaymentProcessor.new")(chainId);
-        console.log(`booth created at ${booth.address}`);
+        console.log("creating new pp for testing");
+        pp = await web3tx(PaymentProcessor.new, "PaymentProcessor.new")(ZERO_ADDRESS);
+        console.log(`PaymentProcessor created at ${pp.address}`);
     });
 
     it("deposit and withdraw ether", async () => {
-        await web3tx(booth.depositEther, "depositEther", {
+        await web3tx(pp.depositEther, "depositEther", {
             inLogs: [{
                 name: "EtherDepositReceived",
                 args: {
@@ -33,7 +34,7 @@ contract("PaymentProcessor", accounts => {
                 }
             }]
         })(1, { value: web3.utils.toWei("0.1", "ether"), from: customer1 });
-        await web3tx(booth.depositEther, "depositEther", {
+        await web3tx(pp.depositEther, "depositEther", {
             inLogs: [{
                 name: "EtherDepositReceived",
                 args: {
@@ -43,9 +44,9 @@ contract("PaymentProcessor", accounts => {
                 }
             }]
         })(2, { value: web3.utils.toWei("0.2", "ether"), from: customer2 });
-        shouldFail(booth.withdrawEther(web3.utils.toWei("0.3", "ether"), admin, { from: hacker }));
+        shouldFail(pp.withdrawEther(web3.utils.toWei("0.3", "ether"), admin, { from: hacker }));
         const balanceBefore = new web3.utils.BN(await web3.eth.getBalance(admin));
-        let tx = await web3tx(booth.withdrawEther, "withdrawEther", {
+        let tx = await web3tx(pp.withdrawEther, "withdrawEther", {
             inLogs: [{
                 name: "EtherDepositWithdrawn",
                 args: {
