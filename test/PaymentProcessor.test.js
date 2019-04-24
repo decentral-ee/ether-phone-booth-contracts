@@ -14,8 +14,10 @@ contract("PaymentProcessor", accounts => {
     before(async () => {
         chainId = await web3.eth.net.getId();
         console.log("chainId is", chainId);
-        console.log("customer1 is", customer1);
         console.log("admin is", admin);
+        console.log("customer1 is", customer1);
+        console.log("customer2 is", customer2);
+        console.log("hacker is", hacker);
     });
 
     beforeEach(async () => {
@@ -30,7 +32,9 @@ contract("PaymentProcessor", accounts => {
                 name: "EtherDepositReceived",
                 args: {
                     orderId: "1",
-                    amount: web3.utils.toWei("0.1", "ether")
+                    amount: web3.utils.toWei("0.1", "ether"),
+                    intermediaryToken: "0x0000000000000000000000000000000000000000",
+                    amountBought: "0"
                 }
             }]
         })(1, { value: web3.utils.toWei("0.1", "ether"), from: customer1 });
@@ -40,7 +44,8 @@ contract("PaymentProcessor", accounts => {
                 args: {
                     orderId: "2",
                     amount: web3.utils.toWei("0.2", "ether"),
-                    intermediaryToken: "0x0000000000000000000000000000000000000000"
+                    intermediaryToken: "0x0000000000000000000000000000000000000000",
+                    amountBought: "0"
                 }
             }]
         })(2, { value: web3.utils.toWei("0.2", "ether"), from: customer2 });

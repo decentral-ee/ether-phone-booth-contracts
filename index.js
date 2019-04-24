@@ -3,7 +3,7 @@ const TruffleContract = require("truffle-contract");
 module.exports = {
     load: (provider) => {
         let contracts = {
-            EtherPhoneBooth : TruffleContract(require("./build/contracts/EtherPhoneBooth.json"))
+            PaymentProcessor : TruffleContract(require("./build/contracts/PaymentProcessor.json"))
         };
         Object.values(contracts).forEach(i => i.setProvider(provider));
         return contracts;

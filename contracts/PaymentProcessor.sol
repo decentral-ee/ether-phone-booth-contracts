@@ -53,6 +53,7 @@ contract PaymentProcessor is Ownable {
         onlyOwner
         external {
         require(token.transfer(to, amount), "Withdraw token failed");
+        emit TokenDepositWithdrawn(address(token), to, amount);
     }
 
     function depositToken(uint64 orderId, address depositor, IERC20 inputToken, uint256 amount)
@@ -83,6 +84,7 @@ contract PaymentProcessor is Ownable {
     event EtherDepositReceived(uint64 indexed orderId, uint256 amount, address intermediaryToken, uint256 amountBought);
     event EtherDepositWithdrawn(address to, uint256 amount);
     event TokenDepositReceived(uint64 indexed orderId, address indexed inputToken, uint256 amount, address intermediaryToken, uint256 amountBought);
+    event TokenDepositWithdrawn(address indexed token, address to, uint256 amount);
 
     modifier hasExchange(address token) {
         address tokenExchange = uniswapFactory.getExchange(token);
