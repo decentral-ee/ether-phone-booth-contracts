@@ -1,1 +1,1 @@
-require("./test_ether_phone_booth.js");
+require("./PaymentProcessor.test.js");

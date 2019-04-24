@@ -11,13 +11,13 @@
     },
     "devDependencies": {
         "openzeppelin-test-helpers": "^0.1.2",
-        "truffle": "^5.0.1",
+        "truffle": "^5.0.13",
         "truffle-flattener": "^1.2.10"
     },
     "scripts": {
         "test": "truffle test --network local test/all.js",
         "build": "npm run build:truffle:compile",
         "build:truffle:compile": "truffle compile",
-        "dev": "nodemon -e sol,js -i build -x 'npm run test && npm run build 2>&1'"
+        "dev": "nodemon -e sol,js -i build -x 'npm run build && npm run test 2>&1'"
     }
 }
