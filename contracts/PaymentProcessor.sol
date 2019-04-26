@@ -56,6 +56,7 @@ contract PaymentProcessor is Ownable {
         emit TokenDepositWithdrawn(address(token), to, amount);
     }
 
+
     function depositToken(uint64 orderId, address depositor, IERC20 inputToken, uint256 amount)
         hasExchange(address(inputToken))
         external {
@@ -63,16 +64,22 @@ contract PaymentProcessor is Ownable {
         UniswapExchangeInterface tokenExchange = UniswapExchangeInterface(uniswapFactory.getExchange(address(inputToken)));
         require(inputToken.allowance(depositor, address(this)) >= amount, "Not enough allowance");
         inputToken.transferFrom(depositor, address(this), amount);
-        inputToken.approve(address(tokenExchange), amount);
         uint256 amountBought = 0;
         if (intermediaryToken != address(0)) {
-            amountBought = tokenExchange.tokenToTokenSwapInput(
-                amount /* (input) tokens_sold */,
-                1 /* (output) min_tokens_bought */,
-                1 /*  min_eth_bought */,
-                UINT256_MAX /* deadline */,
-                intermediaryToken /* (input) token_addr */);
+            if (intermediaryToken != address(inputToken)) {
+                inputToken.approve(address(tokenExchange), amount);
+                amountBought = tokenExchange.tokenToTokenSwapInput(
+                    amount /* (input) tokens_sold */,
+                    1 /* (output) min_tokens_bought */,
+                    1 /*  min_eth_bought */,
+                    UINT256_MAX /* deadline */,
+                    intermediaryToken /* (input) token_addr */);
+            } else {
+                // same token
+                amountBought = amount;
+            }
         } else {
+            inputToken.approve(address(tokenExchange), amount);
             amountBought = tokenExchange.tokenToEthSwapInput(
                 amount /* tokens_sold */,
                 1 /* min_eth */,
