@@ -33,7 +33,7 @@ contract("PaymentProcessor", accounts => {
                 args: {
                     orderId: "1",
                     amount: web3.utils.toWei("0.1", "ether"),
-                    intermediaryToken: "0x0000000000000000000000000000000000000000",
+                    intermediaryToken: ZERO_ADDRESS,
                     amountBought: "0"
                 }
             }]
