@@ -19,7 +19,7 @@ contract PaymentProcessor is Ownable {
 
     function setIntermediaryToken(address token)
         onlyOwner
-        public {
+        external {
         intermediaryToken = token;
         if (token != address(0)) {
             intermediaryTokenExchange = UniswapExchangeInterface(uniswapFactory.getExchange(token));
@@ -59,6 +59,7 @@ contract PaymentProcessor is Ownable {
 
     function depositToken(uint64 orderId, address depositor, IERC20 inputToken, uint256 amount)
         hasExchange(address(inputToken))
+        onlyOwner
         external {
         require(address(inputToken) != address(0), "Input token cannont be ZERO_ADDRESS");
         UniswapExchangeInterface tokenExchange = UniswapExchangeInterface(uniswapFactory.getExchange(address(inputToken)));
