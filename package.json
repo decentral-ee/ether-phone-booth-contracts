@@ -18,6 +18,8 @@
         "test": "truffle test --network local test/all.js",
         "build": "npm run build:truffle:compile",
         "build:truffle:compile": "truffle compile",
-        "dev": "nodemon -e sol,js -i build -x 'npm run build && npm run test 2>&1'"
+        "dev": "nodemon -e sol,js -i build -x 'npm run lint && npm run build && npm run test 2>&1'",
+        "lint": "run-s lint:*",
+        "lint:js": "eslint . --max-warnings=0 --report-unused-disable-directives && echo '✔  Your .js files look good.'"
     }
 }
