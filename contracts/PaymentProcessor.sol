@@ -8,7 +8,7 @@ import { UniswapFactoryInterface } from './uniswap/UniswapFactoryInterface.sol';
 contract PaymentProcessor is Ownable {
     uint256 constant UINT256_MAX = ~uint256(0);
 
-    address fundManager;
+    address public fundManager;
     UniswapFactoryInterface public uniswapFactory;
     address public intermediaryToken;
     UniswapExchangeInterface public intermediaryTokenExchange;
