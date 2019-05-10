@@ -8,17 +8,30 @@ import { UniswapFactoryInterface } from './uniswap/UniswapFactoryInterface.sol';
 contract PaymentProcessor is Ownable {
     uint256 constant UINT256_MAX = ~uint256(0);
 
+    address fundManager;
     UniswapFactoryInterface public uniswapFactory;
     address public intermediaryToken;
-    UniswapExchangeInterface intermediaryTokenExchange;
+    UniswapExchangeInterface public intermediaryTokenExchange;
 
     constructor(UniswapFactoryInterface uniswapFactory_)
         public {
         uniswapFactory = uniswapFactory_;
     }
 
-    function setIntermediaryToken(address token)
+    function setFundManager(address fundManager_)
         onlyOwner
+        public {
+        fundManager = fundManager_;
+    }
+
+    function isFundManager()
+        public view
+        returns (bool) {
+        return isOwner() || msg.sender == fundManager;
+    }
+
+    function setIntermediaryToken(address token)
+        onlyFundManager
         external {
         intermediaryToken = token;
         if (token != address(0)) {
@@ -43,14 +56,14 @@ contract PaymentProcessor is Ownable {
     }
 
     function withdrawEther(uint256 amount, address payable to)
-        onlyOwner
+        onlyFundManager
         external {
         to.transfer(amount);
         emit EtherDepositWithdrawn(to, amount);
     }
 
     function withdrawToken(IERC20 token, uint256 amount, address to)
-        onlyOwner
+        onlyFundManager
         external {
         require(token.transfer(to, amount), "Withdraw token failed");
         emit TokenDepositWithdrawn(address(token), to, amount);
@@ -59,7 +72,7 @@ contract PaymentProcessor is Ownable {
 
     function depositToken(uint64 orderId, address depositor, IERC20 inputToken, uint256 amount)
         hasExchange(address(inputToken))
-        onlyOwner
+        onlyFundManager
         external {
         require(address(inputToken) != address(0), "Input token cannont be ZERO_ADDRESS");
         UniswapExchangeInterface tokenExchange = UniswapExchangeInterface(uniswapFactory.getExchange(address(inputToken)));
@@ -97,6 +110,11 @@ contract PaymentProcessor is Ownable {
     modifier hasExchange(address token) {
         address tokenExchange = uniswapFactory.getExchange(token);
         require(tokenExchange != address(0), "Token doesn't have an exchange");
+        _;
+    }
+
+    modifier onlyFundManager() {
+        require(isFundManager(), "Only fund manager allowed");
         _;
     }
 }

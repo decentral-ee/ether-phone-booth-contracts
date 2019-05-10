@@ -7,6 +7,7 @@ contract("PaymentProcessor", accounts => {
     const admin = accounts[0];
     const customer1 = accounts[1];
     const customer2 = accounts[2];
+    const fundManager = accounts[3];
     const hacker = accounts[9];
     let chainId;
     let pp;
@@ -27,6 +28,9 @@ contract("PaymentProcessor", accounts => {
     });
 
     it("deposit and withdraw ether", async () => {
+        await web3tx(pp.setFundManager, "setFundManager")(fundManager,  { from: admin });
+
+        let tx;
         await web3tx(pp.depositEther, "depositEther", {
             inLogs: [{
                 name: "EtherDepositReceived",
@@ -38,20 +42,23 @@ contract("PaymentProcessor", accounts => {
                 }
             }]
         })(1, { value: web3.utils.toWei("0.1", "ether"), from: customer1 });
+
         await web3tx(pp.depositEther, "depositEther", {
             inLogs: [{
                 name: "EtherDepositReceived",
                 args: {
                     orderId: "2",
-                    amount: web3.utils.toWei("0.2", "ether"),
+                    amount: web3.utils.toWei("0.4", "ether"),
                     intermediaryToken: "0x0000000000000000000000000000000000000000",
                     amountBought: "0"
                 }
             }]
-        })(2, { value: web3.utils.toWei("0.2", "ether"), from: customer2 });
+        })(2, { value: web3.utils.toWei("0.4", "ether"), from: customer2 });
+
         shouldFail(pp.withdrawEther(web3.utils.toWei("0.3", "ether"), admin, { from: hacker }));
-        const balanceBefore = new web3.utils.BN(await web3.eth.getBalance(admin));
-        let tx = await web3tx(pp.withdrawEther, "withdrawEther", {
+
+        let balanceBefore = new web3.utils.BN(await web3.eth.getBalance(admin));
+        tx = await web3tx(pp.withdrawEther, "withdrawEther by owner", {
             inLogs: [{
                 name: "EtherDepositWithdrawn",
                 args: {
@@ -60,7 +67,22 @@ contract("PaymentProcessor", accounts => {
                 }
             }]
         })(web3.utils.toWei("0.3", "ether"), admin, { from: admin });
-        const balanceAfter = new web3.utils.BN(await web3.eth.getBalance(admin));
+        let balanceAfter = new web3.utils.BN(await web3.eth.getBalance(admin));
         assert.equal(balanceAfter.sub(balanceBefore).add(tx.txCost).toString(), web3.utils.toWei("0.3", "ether"));
+
+        balanceBefore = new web3.utils.BN(await web3.eth.getBalance(admin));
+        tx = await web3tx(pp.withdrawEther, "withdrawEther by fundManger", {
+            inLogs: [{
+                name: "EtherDepositWithdrawn",
+                args: {
+                    to: admin,
+                    amount: web3.utils.toWei("0.05", "ether")
+                }
+            }]
+        })(web3.utils.toWei("0.05", "ether"), admin, { from: fundManager });
+        balanceAfter = new web3.utils.BN(await web3.eth.getBalance(admin));
+        assert.equal(balanceAfter.sub(balanceBefore).toString(), web3.utils.toWei("0.05", "ether"));
+
+        assert.equal((await web3.eth.getBalance(pp.address)).toString(), web3.utils.toWei("0.15", "ether"));
     });
 });
