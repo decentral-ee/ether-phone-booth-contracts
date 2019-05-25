@@ -18,4 +18,4 @@
  *
  */
 
-module.exports = require("../../get-shared-config")().truffle;
+module.exports = require("@EtherPhoneBooth/config")().truffle;

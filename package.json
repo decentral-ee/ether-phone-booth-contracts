@@ -1,9 +1,10 @@
 {
-    "name": "ether-phone-booth-contracts",
+    "name": "@EtherPhoneBooth/ethereum-contracts",
     "version": "0.0.1",
     "description": "Ethereum phone booth smart contracts",
     "license": "MIT",
     "dependencies": {
+        "@EtherPhoneBooth/config": "0.0.1",
         "eth-sig-util": "^2.1.0",
         "openzeppelin-solidity": "2.1.2",
         "eip712-helpers": "^1.0.1",
