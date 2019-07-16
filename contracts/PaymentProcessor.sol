@@ -9,6 +9,7 @@ contract PaymentProcessor is Ownable {
     uint256 constant UINT256_MAX = ~uint256(0);
 
     address public fundManager;
+    address public depositAgent;
     UniswapFactoryInterface public uniswapFactory;
     address public intermediaryToken;
     UniswapExchangeInterface public intermediaryTokenExchange;
@@ -24,10 +25,22 @@ contract PaymentProcessor is Ownable {
         fundManager = fundManager_;
     }
 
+    function setDepositAgent(address depositAgent_)
+        onlyOwner
+        public {
+        depositAgent = depositAgent_;
+    }
+
     function isFundManager()
         public view
         returns (bool) {
         return isOwner() || msg.sender == fundManager;
+    }
+
+    function isDepositAgent()
+        public view
+        returns (bool) {
+        return isOwner() || msg.sender == depositAgent;
     }
 
     function setIntermediaryToken(address token)
@@ -55,23 +68,9 @@ contract PaymentProcessor is Ownable {
         emit EtherDepositReceived(orderId, msg.sender, msg.value, intermediaryToken, amountBought);
     }
 
-    function withdrawEther(uint256 amount, address payable to)
-        onlyFundManager
-        external {
-        to.transfer(amount);
-        emit EtherDepositWithdrawn(to, amount);
-    }
-
-    function withdrawToken(IERC20 token, uint256 amount, address to)
-        onlyFundManager
-        external {
-        require(token.transfer(to, amount), "Withdraw token failed");
-        emit TokenDepositWithdrawn(address(token), to, amount);
-    }
-
     function depositToken(uint64 orderId, address depositor, IERC20 inputToken, uint256 amount)
         hasExchange(address(inputToken))
-        onlyFundManager
+        onlyDepositAgent
         external {
         require(address(inputToken) != address(0), "Input token cannont be ZERO_ADDRESS");
         UniswapExchangeInterface tokenExchange = UniswapExchangeInterface(uniswapFactory.getExchange(address(inputToken)));
@@ -101,6 +100,20 @@ contract PaymentProcessor is Ownable {
         emit TokenDepositReceived(orderId, depositor, address(inputToken), amount, intermediaryToken, amountBought);
     }
 
+    function withdrawEther(uint256 amount, address payable to)
+        onlyFundManager
+        external {
+        to.transfer(amount);
+        emit EtherDepositWithdrawn(to, amount);
+    }
+
+    function withdrawToken(IERC20 token, uint256 amount, address to)
+        onlyFundManager
+        external {
+        require(token.transfer(to, amount), "Withdraw token failed");
+        emit TokenDepositWithdrawn(address(token), to, amount);
+    }
+
     event EtherDepositReceived(uint64 indexed orderId, address depositor, uint256 amount, address intermediaryToken, uint256 amountBought);
     event EtherDepositWithdrawn(address to, uint256 amount);
     event TokenDepositReceived(uint64 indexed orderId, address depositor, address indexed inputToken, uint256 amount, address intermediaryToken, uint256 amountBought);
@@ -114,6 +127,11 @@ contract PaymentProcessor is Ownable {
 
     modifier onlyFundManager() {
         require(isFundManager(), "Only fund manager allowed");
+        _;
+    }
+
+    modifier onlyDepositAgent() {
+        require(isDepositAgent(), "Only deposit agent allowed");
         _;
     }
 

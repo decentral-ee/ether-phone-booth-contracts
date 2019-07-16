@@ -11,6 +11,7 @@ contract("PaymentProcessor", accounts => {
     const customer1 = accounts[1];
     const customer2 = accounts[2];
     const fundManager = accounts[3];
+    const depositAgent = accounts[4];
     const hacker = accounts[9];
     let chainId;
     let uniswapFactory;
@@ -38,6 +39,7 @@ contract("PaymentProcessor", accounts => {
         console.log(`PaymentProcessor created at ${pp.address}`);
 
         await web3tx(pp.setFundManager, "setFundManager")(fundManager,  { from: admin });
+        await web3tx(pp.setDepositAgent, "setDepositAgent")(depositAgent,  { from: admin });
     });
 
     it("deposit and withdraw ether", async () => {
@@ -157,7 +159,7 @@ contract("PaymentProcessor", accounts => {
                     // amountBought: "0" - we do not test the value
                 }
             }]
-        })(1, customer1, tokenA.address, 10, { from: fundManager });
+        })(1, customer1, tokenA.address, 10, { from: depositAgent });
         assert.equal(web3.utils.fromWei(await web3.eth.getBalance(pp.address), "ether").substr(0, 8), "0.000098");
 
         // setup token B intermediary
@@ -181,7 +183,7 @@ contract("PaymentProcessor", accounts => {
                     // amountBought: "0" - we do not test the value
                 }
             }]
-        })(1, customer2, tokenB.address, 100, { from: fundManager });
+        })(1, customer2, tokenB.address, 100, { from: depositAgent });
         assert.equal((await tokenB.balanceOf.call(pp.address)).toString(), "100");
 
         // deposit token A with intermediary token set
@@ -202,7 +204,7 @@ contract("PaymentProcessor", accounts => {
                     // amountBought: "0" - we do not test the value
                 }
             }]
-        })(1, customer2, tokenA.address, 10, { from: fundManager });
+        })(1, customer2, tokenA.address, 10, { from: depositAgent });
         assert.equal((await tokenB.balanceOf.call(pp.address)).toString(), "195");
     });
 });
