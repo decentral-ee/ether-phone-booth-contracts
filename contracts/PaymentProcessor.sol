@@ -31,7 +31,7 @@ contract PaymentProcessor is Ownable {
     }
 
     function setIntermediaryToken(address token)
-        onlyFundManager
+        onlyOwner
         external {
         intermediaryToken = token;
         if (token != address(0)) {
@@ -52,7 +52,7 @@ contract PaymentProcessor is Ownable {
                 1 /* min_tokens */,
                 UINT256_MAX /* deadline */);
         }
-        emit EtherDepositReceived(orderId, msg.value, intermediaryToken, amountBought);
+        emit EtherDepositReceived(orderId, msg.sender, msg.value, intermediaryToken, amountBought);
     }
 
     function withdrawEther(uint256 amount, address payable to)
@@ -68,7 +68,6 @@ contract PaymentProcessor is Ownable {
         require(token.transfer(to, amount), "Withdraw token failed");
         emit TokenDepositWithdrawn(address(token), to, amount);
     }
-
 
     function depositToken(uint64 orderId, address depositor, IERC20 inputToken, uint256 amount)
         hasExchange(address(inputToken))
@@ -99,12 +98,12 @@ contract PaymentProcessor is Ownable {
                 1 /* min_eth */,
                 UINT256_MAX /* deadline */);
         }
-        emit TokenDepositReceived(orderId, address(inputToken), amount, intermediaryToken, amountBought);
+        emit TokenDepositReceived(orderId, depositor, address(inputToken), amount, intermediaryToken, amountBought);
     }
 
-    event EtherDepositReceived(uint64 indexed orderId, uint256 amount, address intermediaryToken, uint256 amountBought);
+    event EtherDepositReceived(uint64 indexed orderId, address depositor, uint256 amount, address intermediaryToken, uint256 amountBought);
     event EtherDepositWithdrawn(address to, uint256 amount);
-    event TokenDepositReceived(uint64 indexed orderId, address indexed inputToken, uint256 amount, address intermediaryToken, uint256 amountBought);
+    event TokenDepositReceived(uint64 indexed orderId, address depositor, address indexed inputToken, uint256 amount, address intermediaryToken, uint256 amountBought);
     event TokenDepositWithdrawn(address indexed token, address to, uint256 amount);
 
     modifier hasExchange(address token) {
@@ -117,4 +116,9 @@ contract PaymentProcessor is Ownable {
         require(isFundManager(), "Only fund manager allowed");
         _;
     }
+
+    function() external payable { }
 }
+
+// for testing
+import { ERC20Mintable } from "openzeppelin-solidity/contracts/token/ERC20/ERC20Mintable.sol";
