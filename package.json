@@ -12,11 +12,12 @@
     },
     "devDependencies": {
         "openzeppelin-test-helpers": "^0.4.0",
+        "@decentral.ee/web3-test-helpers": "^0.1.0",
         "truffle": "^5.0.27",
         "truffle-flattener": "^1.4.0"
     },
     "scripts": {
-        "test": "rm -f build/contracts/*;truffle test --network local test/all.js",
+        "test": "npm run build:truffle:compile && truffle test --network local test/all.js",
         "build": "npm run build:truffle:compile",
         "build:truffle:compile": "rm -f build/contracts/*;truffle compile",
         "dev": "nodemon -e sol,js -i build -x 'npm run lint && npm run build && npm run test 2>&1'",

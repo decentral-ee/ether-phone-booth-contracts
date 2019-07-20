@@ -1,8 +1,8 @@
 const PaymentProcessor = artifacts.require("PaymentProcessor");
 const ERC20Mintable = artifacts.require("ERC20Mintable");
-const { UniswapFactory, UniswapExchange } = require("./uniswap");
+const { UniswapFactory, UniswapExchange } = require("../uniswap");
 const { expectRevert } = require("openzeppelin-test-helpers");
-const { web3tx } = require("./test_common");
+const { web3tx } = require("@decentral.ee/web3-test-helpers");
 
 contract("PaymentProcessor", accounts => {
     const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";

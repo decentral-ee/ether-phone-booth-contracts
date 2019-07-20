@@ -1,6 +1,6 @@
 const TruffleContract = require("truffle-contract");
-const UniswapFactoryInterface = artifacts.require("UniswapFactoryInterface");
-const UniswapExchangeInterface = artifacts.require("UniswapExchangeInterface");
+const UniswapFactoryInterface = require("../build/contracts/UniswapFactoryInterface.json");
+const UniswapExchangeInterface = require("../build/contracts/UniswapExchangeInterface.json");
 
 module.exports = {
     UniswapFactory: TruffleContract({

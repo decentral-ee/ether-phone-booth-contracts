@@ -2,8 +2,8 @@ pragma solidity ^0.5.0;
 
 import { Ownable } from 'openzeppelin-solidity/contracts/ownership/Ownable.sol';
 import { IERC20 } from 'openzeppelin-solidity/contracts/token/ERC20/IERC20.sol';
-import { UniswapExchangeInterface } from './uniswap/UniswapExchangeInterface.sol';
-import { UniswapFactoryInterface } from './uniswap/UniswapFactoryInterface.sol';
+import { UniswapExchangeInterface } from '../uniswap/contracts/UniswapExchangeInterface.sol';
+import { UniswapFactoryInterface } from '../uniswap/contracts/UniswapFactoryInterface.sol';
 
 contract PaymentProcessor is Ownable {
     uint256 constant UINT256_MAX = ~uint256(0);
