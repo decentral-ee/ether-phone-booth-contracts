@@ -1,17 +1,13 @@
 module.exports = {
-    "root": true,
-    "extends": "eslint:recommended",
-    "env": {
-        "es6": true,
-        "node": true
+    root: true,
+    env: {
+        node: true
     },
-    "parserOptions": {
-        "ecmaVersion": 8,
-        "ecmaFeatures": {
-            "experimentalObjectRestSpread": true
-        }
+    parserOptions: {
+        ecmaVersion: 2017,
     },
-    "rules": {
+    extends: "eslint:recommended",
+    rules: {
         "indent": [
             "error",
             4
