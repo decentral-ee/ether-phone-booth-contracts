@@ -5,16 +5,16 @@
     "license": "MIT",
     "dependencies": {
         "@EtherPhoneBooth/config": "0.0.1",
-        "eth-sig-util": "^2.2.0",
+        "eth-sig-util": "2.5.0",
+        "eip712-helpers": "1.0.2",
         "openzeppelin-solidity": "2.3.0",
-        "eip712-helpers": "^1.0.2",
-        "truffle-contract": "^4.0.24"
+        "truffle-contract": "4.0.31"
     },
     "devDependencies": {
-        "openzeppelin-test-helpers": "^0.4.0",
-        "@decentral.ee/web3-test-helpers": "^0.1.0",
-        "truffle": "^5.0.27",
-        "truffle-flattener": "^1.4.0"
+        "@decentral.ee/web3-test-helpers": "0.2.1",
+        "openzeppelin-test-helpers": "0.5.1",
+        "truffle": "5.0.42",
+        "truffle-flattener": "1.4.2"
     },
     "scripts": {
         "test": "npm run build:truffle:compile && truffle test --network local test/all.js",
