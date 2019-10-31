@@ -7,7 +7,8 @@ module.exports = async (callback) => {
             filter: {
                 orderId: process.argv[7],
             },
-            fromBlock: 0
+            fromBlock: 0,
+            toBlock: "latest"
         });
         console.log(events);
     } catch (err) {
