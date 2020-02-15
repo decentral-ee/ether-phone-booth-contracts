@@ -4,7 +4,7 @@
     "description": "Ethereum phone booth smart contracts",
     "license": "MIT",
     "dependencies": {
-        "@EtherPhoneBooth/config": "0.0.1",
+        "@rtoken/contracts": "^1.0.1-rc5",
         "eth-sig-util": "2.5.0",
         "eip712-helpers": "1.0.2",
         "openzeppelin-solidity": "2.3.0",
