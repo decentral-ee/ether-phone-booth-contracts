@@ -1,9 +1,10 @@
 pragma solidity ^0.5.0;
 
-import { Ownable } from 'openzeppelin-solidity/contracts/ownership/Ownable.sol';
-import { IERC20 } from 'openzeppelin-solidity/contracts/token/ERC20/IERC20.sol';
+import { Ownable } from '@openzeppelin/contracts/ownership/Ownable.sol';
+import { IERC20 } from '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import { UniswapExchangeInterface } from '../uniswap/contracts/UniswapExchangeInterface.sol';
 import { UniswapFactoryInterface } from '../uniswap/contracts/UniswapFactoryInterface.sol';
+import { IRToken } from '@rtoken/contracts/contracts/IRToken.sol';
 
 contract PaymentProcessor is Ownable {
     uint256 constant UINT256_MAX = ~uint256(0);
@@ -13,6 +14,8 @@ contract PaymentProcessor is Ownable {
     UniswapFactoryInterface public uniswapFactory;
     address public intermediaryToken;
     UniswapExchangeInterface public intermediaryTokenExchange;
+
+    bool public isIntermediaryRToken;
 
     constructor(UniswapFactoryInterface uniswapFactory_)
         public {
@@ -46,10 +49,34 @@ contract PaymentProcessor is Ownable {
     function setIntermediaryToken(address token)
         onlyOwner
         external {
+        isIntermediaryRToken = false;
         intermediaryToken = token;
         if (token != address(0)) {
             intermediaryTokenExchange = UniswapExchangeInterface(uniswapFactory.getExchange(token));
             require(address(intermediaryTokenExchange) != address(0), "The token does not have an exchange");
+        } else {
+            intermediaryTokenExchange = UniswapExchangeInterface(address(0));
+        }
+    }
+
+    /**
+     * Since there isn't a efficient way to check if
+     * the token really is an RToken, we assume that it is
+     * It is in the best interests of the owner to supply
+     * a correct RToken address, otherwise they cannot collect payments
+     */
+    function setIntermediaryRToken(address token)
+        onlyOwner
+        external {
+        isIntermediaryRToken = true;
+        intermediaryToken = token;
+        if (token != address(0)) {
+            IRToken rToken = IRToken(token);
+            address underlying = address(rToken.token());
+            require (underlying != address(0), "No underlying token for rToken");
+            //this will infact represent the underlying token's exchange, since the RToken itself does not need one
+            intermediaryTokenExchange = UniswapExchangeInterface(uniswapFactory.getExchange(underlying));
+            require(address(intermediaryTokenExchange) != address(0), "The underlying token does not have an exchange");
         } else {
             intermediaryTokenExchange = UniswapExchangeInterface(address(0));
         }
@@ -64,6 +91,13 @@ contract PaymentProcessor is Ownable {
             amountBought = intermediaryTokenExchange.ethToTokenSwapInput.value(msg.value)(
                 1 /* min_tokens */,
                 UINT256_MAX /* deadline */);
+            if (isIntermediaryRToken) {
+                IRToken rToken = IRToken(intermediaryToken);
+                IERC20 underlying = IERC20(rToken.token());
+                require (address(underlying) != address(0), "No underlying token for rToken");
+                underlying.approve(address(rToken), amountBought);
+                rToken.mint(amountBought);
+            }
         }
         emit EtherDepositReceived(orderId, msg.sender, msg.value, intermediaryToken, amountBought);
     }
@@ -79,13 +113,31 @@ contract PaymentProcessor is Ownable {
         uint256 amountBought = 0;
         if (intermediaryToken != address(0)) {
             if (intermediaryToken != address(inputToken)) {
-                inputToken.approve(address(tokenExchange), amount);
-                amountBought = tokenExchange.tokenToTokenSwapInput(
-                    amount /* (input) tokens_sold */,
-                    1 /* (output) min_tokens_bought */,
-                    1 /*  min_eth_bought */,
-                    UINT256_MAX /* deadline */,
-                    intermediaryToken /* (input) token_addr */);
+
+                if (isIntermediaryRToken) {
+                    IRToken rToken = IRToken(intermediaryToken);
+                    IERC20 underlying = IERC20(rToken.token());
+                    require (address(underlying) != address(0), "No underlying token for rToken");
+                    if (underlying != inputToken) {
+                        inputToken.approve(address(tokenExchange), amount);
+                        amountBought = tokenExchange.tokenToTokenSwapInput(amount, 1, 1, UINT256_MAX, address(underlying));
+                        underlying.approve(address(rToken), amountBought);
+                        rToken.mint(amountBought);
+
+                    } else {
+                        inputToken.approve(address(rToken), amount);
+                        rToken.mint(amount);
+                        amountBought = amount;
+                    }
+                } else {
+                    inputToken.approve(address(tokenExchange), amount);
+                    amountBought = tokenExchange.tokenToTokenSwapInput(
+                        amount /* (input) tokens_sold */,
+                        1 /* (output) min_tokens_bought */,
+                        1 /*  min_eth_bought */,
+                        UINT256_MAX /* deadline */,
+                        intermediaryToken /* (input) token_addr */);
+                }
             } else {
                 // same token
                 amountBought = amount;
@@ -110,7 +162,13 @@ contract PaymentProcessor is Ownable {
     function withdrawToken(IERC20 token, uint256 amount, address to)
         onlyFundManager
         external {
-        require(token.transfer(to, amount), "Withdraw token failed");
+        if (isIntermediaryRToken) {
+            IRToken rToken = IRToken(intermediaryToken);
+            require(token == rToken.token(), "Supplied token is not underlying token");
+            require(rToken.redeemAndTransfer(to, amount), "Redeeming rTokens failed");
+        } else {
+            require(token.transfer(to, amount), "Withdraw token failed");
+        }
         emit TokenDepositWithdrawn(address(token), to, amount);
     }
 
@@ -137,6 +195,3 @@ contract PaymentProcessor is Ownable {
 
     function() external payable { }
 }
-
-// for testing
-import { ERC20Mintable } from "openzeppelin-solidity/contracts/token/ERC20/ERC20Mintable.sol";

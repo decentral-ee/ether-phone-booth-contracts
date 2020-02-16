@@ -18,4 +18,18 @@
  *
  */
 
-module.exports = require("@EtherPhoneBooth/config")().truffle;
+//module.exports = require("@EtherPhoneBooth/config")().truffle;
+
+module.exports = {
+    compilers: {
+        solc: {
+            version: "0.5.10",
+            settings: {
+                optimizer: {
+                    enabled: true,
+                    runs: 200
+                }
+            }
+        }
+    }
+};
