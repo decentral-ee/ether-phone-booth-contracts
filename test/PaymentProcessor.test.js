@@ -1,7 +1,7 @@
 const PaymentProcessor = artifacts.require("PaymentProcessor");
 const ERC20Mintable = artifacts.require("ERC20Mintable");
 const { UniswapFactory, UniswapExchange } = require("../uniswap");
-const { expectRevert } = require("openzeppelin-test-helpers");
+const { expectRevert } = require("@openzeppelin/test-helpers");
 const { web3tx, toWad } = require("@decentral.ee/web3-test-helpers");
 
 const ComptrollerMock = artifacts.require("ComptrollerMock");
@@ -26,11 +26,9 @@ contract("PaymentProcessor", accounts => {
 
     //rToken variables
     let underlyingToken;
-    let cToken;
     let compoundAS;
     let rToken;
     let rTokenLogic;
-    let SELF_HAT_ID;
 
     async function createCompoundAllocationStrategy(cTokenExchangeRate) {
         const comptroller = await web3tx(ComptrollerMock.new, "ComptrollerMock.new")({ from: admin });
@@ -83,7 +81,6 @@ contract("PaymentProcessor", accounts => {
         await web3tx(underlyingToken.mint, "token.mint 1000 -> customer1")(customer1, toWad(1000), { from: admin });
 
         const result = await createCompoundAllocationStrategy(toWad(.1));
-        cToken = result.cToken;
         compoundAS = result.compoundAS;
 
         // Deploy the rToken logic/library contract
@@ -107,7 +104,6 @@ contract("PaymentProcessor", accounts => {
         rToken = await RToken.at(proxy.address);
 
         await web3tx(compoundAS.transferOwnership, "compoundAS.transferOwnership")(rToken.address);
-        SELF_HAT_ID = await rToken.SELF_HAT_ID.call();
     });
 
     it("deposit and withdraw ether", async () => {
@@ -303,7 +299,7 @@ contract("PaymentProcessor", accounts => {
         assert.equal(await pp.intermediaryTokenExchange.call(), underlyingTokenExchange.address);
 
         //deposit ether
-        let tx = await web3tx(pp.depositEther, "depositEther", {
+        await web3tx(pp.depositEther, "depositEther", {
             inLogs: [{
                 name: "EtherDepositReceived",
                 args: {
@@ -320,7 +316,7 @@ contract("PaymentProcessor", accounts => {
 
         //redeem rTokens and transfer to account
         let balanceBefore = new web3.utils.BN(await underlyingToken.balanceOf.call(admin));
-        tx = await web3tx(pp.withdrawToken, "redeem rTokens to owner", {
+        await web3tx(pp.withdrawToken, "redeem rTokens to owner", {
             inLogs: [{
                 name: "TokenDepositWithdrawn",
                 args: {
@@ -427,7 +423,7 @@ contract("PaymentProcessor", accounts => {
 
         //redeem rTokens and transfer to account
         let balanceBefore = new web3.utils.BN(await underlyingToken.balanceOf.call(admin));
-        let tx = await web3tx(pp.withdrawToken, "redeem rTokens to owner", {
+        await web3tx(pp.withdrawToken, "redeem rTokens to owner", {
             inLogs: [{
                 name: "TokenDepositWithdrawn",
                 args: {
